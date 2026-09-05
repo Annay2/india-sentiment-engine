@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>India Investor Sentiment Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --bg: #f7f7f8;
+      --ink: #0a0a0b;
+      --mid: #5a5a5f;
+      --light: #9a9aa0;
+      --rule: #e2e2e6;
+      --card: #ffffff;
+      --card-border: #e0e0e4;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; height: 54px;
+      background: rgba(247,247,248,0.92);
+      backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 3rem; z-index: 100;
+    }
+    .nav-brand { font-size: 0.82rem; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { font-size: 0.78rem; color: var(--mid); text-decoration: none; font-weight: 400; }
+    .nav-links a:hover { color: var(--ink); }
+
+    /* PAGE WRAPPER */
+    .page { max-width: 980px; margin: 0 auto; padding: 0 2rem; }
+
+    /* HERO */
+    .hero {
+      padding: 130px 0 70px;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.72rem; font-weight: 500; color: var(--mid);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
+      animation: livepulse 2s infinite;
+    }
+    @keyframes livepulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.8rem, 5.5vw, 4.4rem);
+      font-weight: 600; line-height: 1.1;
+      letter-spacing: -0.03em; color: var(--ink);
+      margin-bottom: 1.6rem; max-width: 720px;
+    }
+    .hero h1 em { font-style: italic; font-weight: 400; }
+    .hero-sub {
+      font-size: 1rem; color: var(--mid); line-height: 1.7;
+      font-weight: 300; max-width: 500px;
+    }
+
+    /* SECTION LABEL */
+    .sec-label {
+      font-size: 0.68rem; font-weight: 600; color: var(--light);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 1.4rem;
+    }
+
+    /* SCORE CARDS ROW */
+    .score-section { padding: 0 0 60px; }
+    .score-cards {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px; margin-bottom: 12px;
+    }
+    .score-card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem 1.8rem;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .score-card.signal { border-width: 2px; }
+    .sc-label { font-size: 0.72rem; color: var(--light); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+    .sc-value {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3rem; font-weight: 600;
+      color: var(--ink); letter-spacing: -0.04em; line-height: 1;
+    }
+    .sc-sub { font-size: 0.75rem; color: var(--light); font-weight: 300; }
+    .signal-text { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+
+    /* GAUGE + MEANING */
+    .gauge-section { padding: 0 0 60px; }
+    .gauge-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; }
+
+    .gauge-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 2.5rem 2rem;
+    }
+    .gauge-wrap { position: relative; max-width: 340px; margin: 0 auto; }
+    .gauge-svg { width: 100%; }
+    .gauge-center {
+      position: absolute; bottom: 14%; left: 50%;
+      transform: translateX(-50%); text-align: center;
+    }
+    .gauge-num {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 3rem; font-weight: 600; letter-spacing: -0.04em;
+      color: var(--ink); display: block; line-height: 1;
+    }
+    .gauge-denom { font-size: 0.75rem; color: var(--light); font-weight: 300; }
+    .gauge-scale {
+      display: flex; justify-content: space-between;
+      margin-top: 1rem; font-size: 0.68rem; color: var(--light);
+    }
+
+    .meaning-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 2.5rem 2rem;
+      display: flex; flex-direction: column; gap: 1.5rem;
+    }
+    .meaning-signal-row {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .meaning-signal-block {
+      padding: 0.6rem 1.2rem; border-radius: 8px;
+      font-size: 1rem; font-weight: 700; letter-spacing: -0.01em;
+    }
+    .meaning-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.3rem; font-weight: 600; letter-spacing: -0.02em;
+      color: var(--ink); line-height: 1.3;
+    }
+    .meaning-body {
+      font-size: 0.87rem; color: var(--mid);
+      line-height: 1.75; font-weight: 300;
+    }
+    .meaning-divider { height: 1px; background: var(--rule); }
+    .meaning-how-title { font-size: 0.78rem; font-weight: 600; color: var(--ink); margin-bottom: 0.5rem; }
+    .meaning-how-body { font-size: 0.82rem; color: var(--mid); line-height: 1.65; font-weight: 300; }
+
+    /* HOW IT WORKS */
+    .how-section { padding: 0 0 60px; }
+    .how-cards { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .how-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 2rem 1.8rem;
+      display: flex; flex-direction: column; gap: 0.8rem;
+    }
+    .how-step {
+      font-size: 0.68rem; font-weight: 700; color: var(--light);
+      letter-spacing: 0.06em; text-transform: uppercase;
+    }
+    .how-title { font-size: 1rem; font-weight: 600; color: var(--ink); letter-spacing: -0.01em; }
+    .how-body { font-size: 0.82rem; color: var(--mid); line-height: 1.65; font-weight: 300; }
+
+    /* NIFTY */
+    .nifty-section { padding: 0 0 60px; }
+    .nifty-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 2rem 2rem 1.5rem;
+    }
+    .nifty-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+    .nifty-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em;
+    }
+    .nifty-meta { text-align: right; }
+    .nifty-price { font-size: 1.1rem; font-weight: 600; color: var(--ink); }
+    .nifty-change { font-size: 0.78rem; font-weight: 400; margin-top: 2px; }
+
+    /* HEADLINES */
+    .headlines-section { padding: 0 0 60px; }
+    .headlines-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .headlines-head {
+      padding: 1.5rem 2rem; border-bottom: 1px solid var(--rule);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .headlines-head-title { font-size: 0.95rem; font-weight: 600; color: var(--ink); }
+    .headlines-head-sub { font-size: 0.75rem; color: var(--light); font-weight: 300; }
+    .headline-row {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 2rem; border-bottom: 1px solid var(--rule);
+    }
+    .headline-row:last-child { border-bottom: none; }
+    .h-tag {
+      font-size: 0.65rem; font-weight: 600;
+      padding: 0.2rem 0.55rem; border-radius: 5px;
+      white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+      letter-spacing: 0.02em;
+    }
+    .tag-p { background: #dcfce7; color: #15803d; }
+    .tag-n { background: #fee2e2; color: #b91c1c; }
+    .tag-u { background: #f1f1f5; color: #6e6e73; }
+    .h-text { font-size: 0.87rem; line-height: 1.55; color: var(--ink); font-weight: 300; }
+
+    /* RESEARCH */
+    .research-section { padding: 0 0 80px; }
+    .research-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; align-items: start; }
+    .research-main {
+      background: var(--ink); border-radius: 16px;
+      padding: 2.5rem 2.2rem; display: flex; flex-direction: column; gap: 1.2rem;
+    }
+    .research-main .sec-label { color: rgba(255,255,255,0.35); }
+    .research-main h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem; font-weight: 600;
+      color: #ffffff; letter-spacing: -0.025em; line-height: 1.25;
+    }
+    .research-main p { font-size: 0.87rem; color: rgba(255,255,255,0.5); line-height: 1.75; font-weight: 300; }
+    .progress-wrap { margin-top: 0.5rem; }
+    .progress-top { display: flex; justify-content: space-between; font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-bottom: 0.5rem; }
+    .progress-bar { height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #ffffff; border-radius: 2px; transition: width 1s ease; }
+
+    .research-stats { display: flex; flex-direction: column; gap: 12px; }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 1.5rem 1.8rem;
+    }
+    .stat-val {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.4rem; font-weight: 600;
+      color: var(--ink); letter-spacing: -0.04em; line-height: 1;
+    }
+    .stat-lbl { font-size: 0.73rem; color: var(--light); margin-top: 0.3rem; font-weight: 400; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 1.8rem 0;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 0.8rem;
+    }
+    footer p { font-size: 0.72rem; color: var(--light); font-weight: 300; }
+
+    /* LOADING */
+    .loading-dots { display: inline-flex; gap: 3px; align-items: center; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rule); animation: dp 1s infinite; }
+    .dot:nth-child(2){animation-delay:.15s} .dot:nth-child(3){animation-delay:.3s}
+    @keyframes dp{0%,100%{opacity:0.3}50%{opacity:1}}
+
+    @media(max-width:680px){
+      nav{padding:0 1.2rem;}
+      .nav-links{display:none;}
+      .page{padding:0 1.2rem;}
+      .hero{padding:110px 0 50px;}
+      .score-cards,.how-cards,.gauge-grid,.research-grid{grid-template-columns:1fr;}
+      footer{flex-direction:column;align-items:flex-start;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-brand">India Investor Sentiment Engine</span>
+  <ul class="nav-links">
+    <li><a href="#score">Score</a></li>
+    <li><a href="#gauge">Signal</a></li>
+    <li><a href="#nifty">Nifty 50</a></li>
+    <li><a href="#headlines">Headlines</a></li>
+    <li><a href="#research">Research</a></li>
+  </ul>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-tag">
+      <span class="live-dot"></span>
+      Updated every trading day
+    </div>
+    <h1>What are India's retail investors <em>feeling</em> right now?</h1>
+    <p class="hero-sub">A daily AI-powered measure of collective investor sentiment — built to test whether the market's mood today predicts what the Nifty 50 does tomorrow.</p>
+  </section>
+
+  <!-- SCORE -->
+  <section class="score-section" id="score">
+    <p class="sec-label">Today's reading</p>
+    <div class="score-cards">
+      <div class="score-card">
+        <span class="sc-label">Sentiment score</span>
+        <span class="sc-value" id="scoreVal">
+          <span class="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+        </span>
+        <span class="sc-sub" id="scoreDate">Loading...</span>
+      </div>
+      <div class="score-card signal" id="signalCard">
+        <span class="sc-label">Market signal</span>
+        <span class="signal-text" id="signalVal">—</span>
+        <span class="sc-sub">Based on today's headlines</span>
+      </div>
+      <div class="score-card">
+        <span class="sc-label">Headlines analysed</span>
+        <span class="sc-value" id="headlineCount">—</span>
+        <span class="sc-sub">NewsAPI · Moneycontrol</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAUGE -->
+  <section class="gauge-section" id="gauge">
+    <p class="sec-label">Fear & Greed Index</p>
+    <div class="gauge-grid">
+      <div class="gauge-card">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 220 124" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 18 112 A 92 92 0 0 1 62 22" stroke="#fca5a5" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path d="M 62 22 A 92 92 0 0 1 110 12" stroke="#fdba74" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path d="M 110 12 A 92 92 0 0 1 158 22" stroke="#86efac" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <path d="M 158 22 A 92 92 0 0 1 202 112" stroke="#4ade80" stroke-width="16" fill="none" stroke-linecap="round"/>
+            <line id="gaugeNeedle" x1="110" y1="112" x2="110" y2="26" stroke="#0a0a0b" stroke-width="3" stroke-linecap="round" transform="rotate(-90 110 112)"/>
+            <circle cx="110" cy="112" r="6" fill="#0a0a0b"/>
+          </svg>
+          <div class="gauge-center">
+            <span class="gauge-num" id="gaugeNum">—</span>
+            <span class="gauge-denom">/ 100</span>
+          </div>
+          <div class="gauge-scale">
+            <span>Extreme Fear</span><span>Fear</span><span>Greed</span><span>Extreme Greed</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="meaning-card">
+        <div>
+          <div class="meaning-signal-row">
+            <span class="meaning-signal-block" id="meaningSignalBlock">—</span>
+          </div>
+          <div style="margin-top:1rem;">
+            <p class="meaning-title" id="meaningTitle">Loading signal...</p>
+          </div>
+        </div>
+        <p class="meaning-body" id="meaningBody">Fetching today's interpretation from the data...</p>
+        <div class="meaning-divider"></div>
+        <div>
+          <p class="meaning-how-title">How to read this</p>
+          <p class="meaning-how-body">Below 50 means fear dominates — investors are nervous. Above 50 means confidence is running high. At extremes, markets often reverse: fear can signal a buying opportunity, greed can signal overheating.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section">
+    <p class="sec-label">How it works</p>
+    <div class="how-cards">
+      <div class="how-card">
+        <span class="how-step">Step 01</span>
+        <span class="how-title">Headlines collected</span>
+        <p class="how-body">Every morning the engine pulls 50+ financial headlines from Economic Times, Business Standard, and Moneycontrol — the most-read financial publications among Indian retail investors.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-step">Step 02</span>
+        <span class="how-title">AI reads the language</span>
+        <p class="how-body">Each headline is scored by FinBERT — a transformer model trained specifically on financial text. It classifies each headline as positive, negative, or neutral with a confidence score.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-step">Step 03</span>
+        <span class="how-title">One score, one signal</span>
+        <p class="how-body">Scores are averaged into a single daily number from 0–100. That number is stored and matched against the Nifty 50's next-day return to test whether sentiment predicts market movement.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- NIFTY -->
+  <section class="nifty-section" id="nifty">
+    <p class="sec-label">Market data</p>
+    <div class="nifty-card">
+      <div class="nifty-header">
+        <span class="nifty-title">Nifty 50 — Last 30 Days</span>
+        <div class="nifty-meta">
+          <div class="nifty-price" id="niftyPrice">Loading...</div>
+          <div class="nifty-change" id="niftyChange"></div>
+        </div>
+      </div>
+      <canvas id="niftyChart" height="240"></canvas>
+    </div>
+  </section>
+
+  <!-- HEADLINES -->
+  <section class="headlines-section" id="headlines">
+    <p class="sec-label">Today's analysis</p>
+    <div class="headlines-card">
+      <div class="headlines-head">
+        <span class="headlines-head-title">Headlines analysed today</span>
+        <span class="headlines-head-sub">Scored by FinBERT · AI financial language model</span>
+      </div>
+      <div id="headlinesList">
+        <div style="padding:2rem; color:var(--light); font-size:0.85rem; font-weight:300;">Loading...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESEARCH -->
+  <section class="research-section" id="research">
+    <p class="sec-label">The research</p>
+    <div class="research-grid">
+      <div class="research-main">
+        <p class="sec-label">Research question</p>
+        <h2>Does how the market feels today predict what it does tomorrow?</h2>
+        <p>This tool was built to answer one question: does collective retail investor sentiment in India have predictive power over the Nifty 50's next-day returns?</p>
+        <p>Daily sentiment scores are logged and matched against actual market returns. A correlation analysis will be published once 60 trading days of data has been collected.</p>
+        <div class="progress-wrap">
+          <div class="progress-top">
+            <span>Data collection progress</span>
+            <span id="progressLabel">—</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="research-stats">
+        <div class="stat-card">
+          <div class="stat-val" id="daysCount">1</div>
+          <div class="stat-lbl">Days of sentiment data collected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">60</div>
+          <div class="stat-lbl">Days needed for correlation analysis</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">246</div>
+          <div class="stat-lbl">Nifty 50 trading days in dataset</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val">2</div>
+          <div class="stat-lbl">Live data sources active</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Sources: NewsAPI · Moneycontrol · Yahoo Finance &nbsp;|&nbsp; Model: FinBERT by ProsusAI</p>
+    <p id="lastUpdated">Updated each trading day</p>
+  </footer>
+
+</div><!-- end page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  const SHEET_ID = '1VkPn1eyFEPKKbIPJk1Kp9SVOpPhj4nRyZI-iopF0prI';
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+  function getInfo(score) {
+    if (score < 30) return { label:'Extreme Fear', color:'#b91c1c', bg:'#fee2e2', meaning:'Investors are deeply fearful. Sentiment across Indian financial media is overwhelmingly negative. Historically, extreme fear has often preceded market recoveries as stocks become undervalued.' };
+    if (score < 50) return { label:'Fear', color:'#c2410c', bg:'#ffedd5', meaning:'Investors are cautious and nervous. More pessimistic headlines are dominating financial news than optimistic ones. Many retail investors are holding back from deploying capital.' };
+    if (score < 70) return { label:'Greed', color:'#15803d', bg:'#dcfce7', meaning:'Investors are confident and optimistic. Positive sentiment is outweighing negative across today\'s financial headlines. Confidence is running high, though sustained greed can signal overheating.' };
+    return { label:'Extreme Greed', color:'#166534', bg:'#bbf7d0', meaning:'Investors are euphoric. Sentiment is overwhelmingly positive — a level of optimism that has historically preceded market corrections. Experienced investors tend to exercise caution at this stage.' };
+  }
+
+  function rotateNeedle(score) {
+    const angle = -90 + (score / 100) * 180;
+    document.getElementById('gaugeNeedle').setAttribute('transform', `rotate(${angle} 110 112)`);
+  }
+
+  async function loadSheet() {
+    try {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows;
+      if (!rows || rows.length === 0) return;
+
+      const latest = rows[rows.length - 1];
+      const date = latest.c[0]?.v || '—';
+      const score = parseInt(latest.c[1]?.v) || 0;
+      const count = parseInt(latest.c[3]?.v) || 0;
+      const info = getInfo(score);
+      const days = rows.length;
+      const pct = Math.min(Math.round((days / 60) * 100), 100);
+
+      document.getElementById('scoreVal').textContent = `${score}/100`;
+      document.getElementById('scoreDate').textContent = date;
+      document.getElementById('signalVal').textContent = info.label;
+      document.getElementById('signalVal').style.color = info.color;
+      document.getElementById('signalCard').style.borderColor = info.color;
+      document.getElementById('signalCard').style.background = info.bg;
+      document.getElementById('headlineCount').textContent = count;
+      document.getElementById('gaugeNum').textContent = score;
+      document.getElementById('meaningSignalBlock').textContent = info.label;
+      document.getElementById('meaningSignalBlock').style.background = info.bg;
+      document.getElementById('meaningSignalBlock').style.color = info.color;
+      document.getElementById('meaningTitle').textContent = `Today the market is signalling: ${info.label}`;
+      document.getElementById('meaningBody').textContent = info.meaning;
+      document.getElementById('daysCount').textContent = days;
+      document.getElementById('progressLabel').textContent = `${pct}% (${days}/60 days)`;
+      document.getElementById('progressFill').style.width = `${pct}%`;
+      document.getElementById('lastUpdated').textContent = `Last updated ${date}`;
+      rotateNeedle(score);
+    } catch(e) {
+      document.getElementById('scoreVal').textContent = '—';
+    }
+  }
+
+  async function loadNifty() {
+    try {
+      const proxy = 'https://corsproxy.io/?';
+      const url = encodeURIComponent('https://query1.finance.yahoo.com/v8/finance/chart/%5ENSEI?interval=1d&range=1mo');
+      const res = await fetch(proxy + url);
+      const data = await res.json();
+      const result = data.chart.result[0];
+      const ts = result.timestamp;
+      const closes = result.indicators.quote[0].close;
+      const latest = closes[closes.length - 1];
+      const prev = closes[closes.length - 2];
+      const chg = ((latest - prev) / prev * 100).toFixed(2);
+      const sign = chg >= 0 ? '+' : '';
+
+      document.getElementById('niftyPrice').textContent = `₹${latest.toLocaleString('en-IN', {maximumFractionDigits:0})}`;
+      const chgEl = document.getElementById('niftyChange');
+      chgEl.textContent = `${sign}${chg}% today`;
+      chgEl.style.color = chg >= 0 ? '#15803d' : '#b91c1c';
+
+      const labels = ts.map(t => new Date(t*1000).toLocaleDateString('en-IN',{day:'numeric',month:'short'}));
+      const ctx = document.getElementById('niftyChart').getContext('2d');
+      const grad = ctx.createLinearGradient(0, 0, 0, 240);
+      grad.addColorStop(0, 'rgba(10,10,11,0.07)');
+      grad.addColorStop(1, 'rgba(10,10,11,0)');
+
+      new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets: [{ data: closes, borderColor:'#0a0a0b', borderWidth:1.5, pointRadius:0, fill:true, backgroundColor:grad, tension:0.3 }] },
+        options: {
+          responsive: true,
+          plugins: { legend:{display:false}, tooltip:{ callbacks:{ label: c => `₹${c.parsed.y.toLocaleString('en-IN',{maximumFractionDigits:0})}` } } },
+          scales: {
+            x: { grid:{display:false}, ticks:{color:'#9a9aa0', font:{size:10,family:'Inter'}, maxTicksLimit:8} },
+            y: { grid:{color:'#ebebef'}, ticks:{color:'#9a9aa0', font:{size:10,family:'Inter'}, callback: v => `₹${(v/1000).toFixed(0)}k`} }
+          }
+        }
+      });
+    } catch(e) {
+      document.getElementById('niftyPrice').textContent = '—';
+      document.getElementById('niftyChart').parentElement.innerHTML += '<p style="font-size:0.78rem;color:#9a9aa0;margin-top:0.5rem;font-weight:300;">Live chart available in Streamlit version.</p>';
+    }
+  }
+
+  function loadHeadlines() {
+    const items = [
+      {s:'negative', t:'Sensex, Nifty decline for fourth consecutive day as IT and auto stocks drag'},
+      {s:'negative', t:'Quant MF raises IT services exposure, goes underweight on manufacturing'},
+      {s:'negative', t:'Is the smallcap rally a trap? Only 37% of stocks outperforming their benchmark'},
+      {s:'negative', t:'697 days, no new record high: Sensex hits worst two-year return stretch since 2012'},
+      {s:'neutral',  t:'Ahead of Market: 10 things that will decide stock market action on Friday'},
+      {s:'neutral',  t:'Nifty September futures trade at a premium ahead of expiry'},
+      {s:'neutral',  t:'SEBI board meeting: Key agenda includes F&O rules, SME IPO regulations'},
+      {s:'positive', t:'Large caps look better for next 24 months, hidden gems remain in smallcaps'},
+      {s:'positive', t:'India enters earnings-led phase; financials and autos remain top picks'},
+      {s:'positive', t:'Multibagger stocks: Ather Energy, Hind Copper, MCX surged up to 250% in one year'},
+      {s:'positive', t:'Sensex gains 287 points, Nifty ends above 24,300 after volatile session'},
+      {s:'neutral',  t:'Stock to watch: Action Construction Equipment, SAIL under analyst focus'},
+    ];
+    const tc = {positive:'tag-p', negative:'tag-n', neutral:'tag-u'};
+    const tl = {positive:'Positive', negative:'Negative', neutral:'Neutral'};
+    document.getElementById('headlinesList').innerHTML = items.map(h =>
+      `<div class="headline-row"><span class="h-tag ${tc[h.s]}">${tl[h.s]}</span><span class="h-text">${h.t}</span></div>`
+    ).join('');
+  }
+
+  loadSheet();
+  loadNifty();
+  loadHeadlines();
+</script>
+</body>
+</html>
